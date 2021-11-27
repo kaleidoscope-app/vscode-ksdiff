@@ -1,0 +1,262 @@
+{
+  "name": "vscode-ksdiff",
+  "displayName": "Kaleidoscope for Visual Studio Code",
+  "description": "Compare files and text selections, run git difftool and git mergetool.",
+  "version": "1.0.0",
+  "publisher": "kaleidoscope-app",
+  "homepage": "https://kaleidoscope.app",
+  "bugs": {
+    "email": "support@kaleidoscope.app"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kaleidoscope-app/vscode-ksdiff"
+  },
+  "engines": {
+    "vscode": "^1.64.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "diff",
+    "difftool",
+    "merge",
+    "scm",
+    "compare"
+  ],
+  "icon": "img/icon.png",
+  "galleryBanner": {
+    "color": "#FFFFFF",
+    "theme": "light"
+  },
+  "activationEvents": [
+    "onCommand:kaleidoscope.diffFile",
+    "onCommand:kaleidoscope.diffSection",
+    "onCommand:kaleidoscope.diffScm",
+    "onCommand:kaleidoscope.mergeScm",
+    "onCommand:kaleidoscope.textCompareEditor",
+    "onCommand:kaleidoscope.showAllChangesFromScmTitle",
+    "onCommand:kaleidoscope.showAllStagedChanges",
+    "onCommand:kaleidoscope.showAllUnstagedChanges",
+    "onCommand:kaleidoscope.showChanges"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Kaleidoscope",
+      "properties": {
+        "kaleidoscope.compareTool": {
+          "type": "string",
+          "default": "/usr/local/bin/ksdiff",
+          "markdownDescription": "Path to the tool used to compare files or text.  The default is __ksdiff__, the command line helper provided by [Kaleidoscope](https://kaleidoscope.app).  (Inside Kaleidoscope, install it via __Kaleidoscope > Integration…__)"
+        },
+        "kaleidoscope.git.difftool": {
+          "type": "string",
+          "default": "Kaleidoscope",
+          "enum": [
+            "Kaleidoscope",
+            "Default"
+          ],
+          "enumDescriptions": [
+            "Always prefer Kaleidoscope",
+            "Use the tool specified in your git configuration"
+          ],
+          "markdownDescription": "Specify the tool used for showing changes."
+        },
+        "kaleidoscope.git.mergetool": {
+          "type": "string",
+          "default": "Kaleidoscope",
+          "enum": [
+            "Kaleidoscope",
+            "Default"
+          ],
+          "enumDescriptions": [
+            "Always prefer Kaleidoscope",
+            "Use the tool specified in your git configuration"
+          ],
+          "markdownDescription": "Specify the tool used for conflict resolution."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "kaleidoscope.diffFile",
+        "title": "Open in Kaleidoscope",
+        "icon": {
+          "light": "img/kaleidoscope.svg",
+          "dark": "img/kaleidoscope~dark.svg"
+        }
+      },
+      {
+        "command": "kaleidoscope.diffSection",
+        "title": "Compare in Kaleidoscope"
+      },
+      {
+        "command": "kaleidoscope.diffScm",
+        "title": "Show Changes (Kaleidoscope)",
+        "icon": {
+          "light": "img/kaleidoscope.svg",
+          "dark": "img/kaleidoscope~dark.svg"
+        }
+      },
+      {
+        "command": "kaleidoscope.showAllChangesFromScmTitle",
+        "title": "Show All Changes (Kaleidoscope)",
+        "icon": {
+          "light": "img/kaleidoscope.svg",
+          "dark": "img/kaleidoscope~dark.svg"
+        }
+      },
+      {
+        "command": "kaleidoscope.showAllStagedChanges",
+        "title": "Show Staged Changes (Kaleidoscope)",
+        "icon": {
+          "light": "img/kaleidoscope.svg",
+          "dark": "img/kaleidoscope~dark.svg"
+        }
+      },
+      {
+        "command": "kaleidoscope.showAllUnstagedChanges",
+        "title": "Show All Changes (Kaleidoscope)",
+        "icon": {
+          "light": "img/kaleidoscope.svg",
+          "dark": "img/kaleidoscope~dark.svg"
+        }
+      },
+      {
+        "command": "kaleidoscope.showChanges",
+        "title": "Show Changes (Kaleidoscope)",
+        "icon": {
+          "light": "img/kaleidoscope.svg",
+          "dark": "img/kaleidoscope~dark.svg"
+        }
+      },
+      {
+        "command": "kaleidoscope.textCompareEditor",
+        "title": "Open Changes (Kaleidoscope)",
+        "icon": {
+          "light": "img/kaleidoscope.svg",
+          "dark": "img/kaleidoscope~dark.svg"
+        }
+      },
+      {
+        "command": "kaleidoscope.mergeScm",
+        "title": "Start Merge (Kaleidoscope)",
+        "icon": {
+          "light": "img/kaleidoscope.svg",
+          "dark": "img/kaleidoscope~dark.svg"
+        }
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "kaleidoscope.diffSection",
+          "group": "3_compare",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "kaleidoscope.diffFile",
+          "group": "3_compare",
+          "when": "!editorHasSelection"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "kaleidoscope.diffFile",
+          "group": "navigation",
+          "when": "editorIsOpen && !textCompareEditorActive"
+        },
+        {
+          "command": "kaleidoscope.textCompareEditor",
+          "group": "navigation",
+          "when": "textCompareEditorActive"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "command": "kaleidoscope.diffFile",
+          "group": "1_diff",
+          "when": "config.kaleidoscope.compareTool"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "kaleidoscope.diffFile",
+          "group": "3_compare",
+          "when": "config.kaleidoscope.compareTool"
+        }
+      ],
+      "scm/title": [
+        {
+          "command": "kaleidoscope.showAllChangesFromScmTitle",
+          "group": "navigation",
+          "when": "scmProvider == git"
+        }
+      ],
+      "scm/resourceFolder/context": [
+        {
+          "command": "kaleidoscope.showChanges",
+          "group": "navigation",
+          "when": "scmProvider == git"
+        }
+      ],
+      "scm/resourceGroup/context": [
+        {
+          "command": "kaleidoscope.showAllStagedChanges",
+          "group": "navigation",
+          "when": "scmProvider == git  && scmResourceGroup == index"
+        },
+        {
+          "command": "kaleidoscope.showAllUnstagedChanges",
+          "group": "navigation",
+          "when": "scmProvider == git  && scmResourceGroup == workingTree"
+        }
+      ],
+      "scm/resourceState/context": [
+        {
+          "command": "kaleidoscope.diffScm",
+          "group": "navigation",
+          "when": "scmProvider == git && scmResourceGroup != merge"
+        },
+        {
+          "command": "kaleidoscope.mergeScm",
+          "group": "navigation",
+          "when": "scmProvider == git && scmResourceGroup == merge"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.1.4",
+    "@types/mocha": "^9.0.0",
+    "@types/node": "14.x",
+    "@types/vscode": "^1.62.0",
+    "@typescript-eslint/eslint-plugin": "^5.1.0",
+    "@typescript-eslint/parser": "^5.1.0",
+    "@vscode/test-electron": "^1.6.2",
+    "eslint": "^8.1.0",
+    "glob": "^7.1.7",
+    "mocha": "^9.1.3",
+    "typescript": "^4.4.4"
+  },
+  "dependencies": {
+    "child_process": "^1.0.2",
+    "simple-git": "^2.47.0"
+  },
+  "extensionDependencies": [
+    "vscode.git"
+  ],
+  "extensionKind": [
+    "ui"
+  ]
+}

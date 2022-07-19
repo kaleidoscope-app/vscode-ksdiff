@@ -2,7 +2,7 @@
   "name": "vscode-ksdiff",
   "displayName": "Kaleidoscope for Visual Studio Code",
   "description": "Compare files and text selections, run git difftool and git mergetool.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "kaleidoscope-app",
   "homepage": "https://kaleidoscope.app",
   "bugs": {

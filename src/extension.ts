@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { Utils } from 'vscode-uri';
 import { API as GitAPI, GitExtension, Repository } from '../typings/git';
 import { spawn, SpawnOptions } from 'child_process';
 import simpleGit, { GitError } from 'simple-git';
@@ -228,8 +229,17 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand('kaleidoscope.showChanges', (resourceState: vscode.SourceControlResourceState) => {
-			let path: string = resourceState.resourceUri.fsPath;
+		vscode.commands.registerCommand('kaleidoscope.showStagedChangesInFolder', (resourceState: vscode.SourceControlResourceState) => {
+			let path: string = Utils.dirname(resourceState.resourceUri).fsPath;
+			let repository = gitAPI.repositories.filter(r => isDescendant(r.rootUri.fsPath, path))[0];
+	
+			difftool(repository, ['--staged', path]);
+		})
+	);
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand('kaleidoscope.showUnstagedChangesInFolder', (resourceState: vscode.SourceControlResourceState) => {
+			let path: string = Utils.dirname(resourceState.resourceUri).fsPath;
 			let repository = gitAPI.repositories.filter(r => isDescendant(r.rootUri.fsPath, path))[0];
 	
 			difftool(repository, [path]);

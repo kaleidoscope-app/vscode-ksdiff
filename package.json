@@ -38,7 +38,8 @@
     "onCommand:kaleidoscope.textCompareEditor",
     "onCommand:kaleidoscope.showAllStagedChanges",
     "onCommand:kaleidoscope.showAllUnstagedChanges",
-    "onCommand:kaleidoscope.showChanges"
+    "onCommand:kaleidoscope.showStagedChangesInFolder",
+    "onCommand:kaleidoscope.showUnstagedChangesInFolder"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -190,9 +191,14 @@
       ],
       "scm/resourceFolder/context": [
         {
-          "command": "kaleidoscope.showChanges",
+          "command": "kaleidoscope.showStagedChangesInFolder",
           "group": "navigation",
-          "when": "scmProvider == git"
+          "when": "scmProvider == git && scmResourceGroup == index"
+        },
+        {
+          "command": "kaleidoscope.showUnstagedChangesInFolder",
+          "group": "navigation",
+          "when": "scmProvider == git && scmResourceGroup == workingTree"
         }
       ],
       "scm/resourceGroup/context": [

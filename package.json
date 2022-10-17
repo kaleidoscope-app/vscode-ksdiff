@@ -85,11 +85,13 @@
         "icon": {
           "light": "img/kaleidoscope.svg",
           "dark": "img/kaleidoscope~dark.svg"
-        }
+        },
+        "enablement": "editorIsOpen && resourceScheme =~ /^file$/"
       },
       {
         "command": "kaleidoscope.diffSection",
-        "title": "Compare in Kaleidoscope"
+        "title": "Compare in Kaleidoscope",
+        "enablement": "editorHasSelection"
       },
       {
         "command": "kaleidoscope.diffScm",
@@ -97,7 +99,8 @@
         "icon": {
           "light": "img/kaleidoscope.svg",
           "dark": "img/kaleidoscope~dark.svg"
-        }
+        },
+        "enablement": "scmProvider == git  && scmResourceGroup != merge"
       },
       {
         "command": "kaleidoscope.showAllStagedChanges",
@@ -105,7 +108,8 @@
         "icon": {
           "light": "img/kaleidoscope.svg",
           "dark": "img/kaleidoscope~dark.svg"
-        }
+        },
+        "enablement": "scmProvider == git  && scmResourceGroup == index"
       },
       {
         "command": "kaleidoscope.showAllUnstagedChanges",
@@ -113,15 +117,18 @@
         "icon": {
           "light": "img/kaleidoscope.svg",
           "dark": "img/kaleidoscope~dark.svg"
-        }
+        },
+        "enablement": "scmProvider == git && scmResourceGroup == workingTree"
       },
       {
-        "command": "kaleidoscope.showChanges",
+        "command": "kaleidoscope.showStagedChangesInFolder",
         "title": "Show Changes (Kaleidoscope)",
-        "icon": {
-          "light": "img/kaleidoscope.svg",
-          "dark": "img/kaleidoscope~dark.svg"
-        }
+        "enablement": "scmProvider == git"
+      },
+      {
+        "command": "kaleidoscope.showUnstagedChangesInFolder",
+        "title": "Show Changes (Kaleidoscope)",
+        "enablement": "scmProvider == git"
       },
       {
         "command": "kaleidoscope.textCompareEditor",
@@ -129,7 +136,8 @@
         "icon": {
           "light": "img/kaleidoscope.svg",
           "dark": "img/kaleidoscope~dark.svg"
-        }
+        },
+        "enablement": "textCompareEditorActive"
       },
       {
         "command": "kaleidoscope.mergeScm",
@@ -137,7 +145,8 @@
         "icon": {
           "light": "img/kaleidoscope.svg",
           "dark": "img/kaleidoscope~dark.svg"
-        }
+        },
+        "enablement": "scmProvider == git  && scmResourceGroup == merge"
       }
     ],
     "menus": {
@@ -190,12 +199,12 @@
         {
           "command": "kaleidoscope.showAllStagedChanges",
           "group": "navigation",
-          "when": "scmProvider == git  && scmResourceGroup == index"
+          "when": "scmProvider == git && scmResourceGroup == index"
         },
         {
           "command": "kaleidoscope.showAllUnstagedChanges",
           "group": "navigation",
-          "when": "scmProvider == git  && scmResourceGroup == workingTree"
+          "when": "scmProvider == git && scmResourceGroup == workingTree"
         }
       ],
       "scm/resourceState/context": [

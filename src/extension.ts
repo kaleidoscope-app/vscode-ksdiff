@@ -120,18 +120,27 @@ export function activate(context: vscode.ExtensionContext) {
 	let gitAPI = gitExtension.getAPI(1);
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand('kaleidoscope.diffFile', async (uri: vscode.Uri, uris: [vscode.Uri]) => {
+		vscode.commands.registerCommand('kaleidoscope.diffFile', async (uri?: vscode.Uri, uris?: [vscode.Uri]) => {
 			let config = vscode.workspace.getConfiguration('kaleidoscope');
 			let diffPath = config.get('compareTool') as string;
 			if (!await fileExists(diffPath)) {
 				return;
 			}
 
-			var paths;
-			if (uris && uris.length > 0) {
+			var paths: string[] = [];
+			if (uris && uris?.length > 0) {
 				paths = uris.map(r => r.fsPath);
-			} else {
+			} else if (uri?.fsPath) {
 				paths = [uri.fsPath];
+			} else if (vscode.window.activeTextEditor) {
+				let docUri = vscode.window.activeTextEditor.document.uri;
+				if (docUri?.fsPath) {
+					paths = [docUri.fsPath];
+				}
+			}
+
+			if (paths.length === 0) {
+				return;
 			}
 
 			let spawnOptions: SpawnOptions;

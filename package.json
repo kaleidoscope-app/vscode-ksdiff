@@ -186,7 +186,7 @@
         {
           "command": "kaleidoscope.diffFile",
           "group": "3_compare",
-          "when": "config.kaleidoscope.compareTool"
+          "when": "config.kaleidoscope.compareTool && !explorerResourceIsFolder"
         }
       ],
       "scm/resourceFolder/context": [

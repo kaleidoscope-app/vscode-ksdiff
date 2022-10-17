@@ -36,7 +36,6 @@
     "onCommand:kaleidoscope.diffScm",
     "onCommand:kaleidoscope.mergeScm",
     "onCommand:kaleidoscope.textCompareEditor",
-    "onCommand:kaleidoscope.showAllChangesFromScmTitle",
     "onCommand:kaleidoscope.showAllStagedChanges",
     "onCommand:kaleidoscope.showAllUnstagedChanges",
     "onCommand:kaleidoscope.showChanges"
@@ -95,14 +94,6 @@
       {
         "command": "kaleidoscope.diffScm",
         "title": "Show Changes (Kaleidoscope)",
-        "icon": {
-          "light": "img/kaleidoscope.svg",
-          "dark": "img/kaleidoscope~dark.svg"
-        }
-      },
-      {
-        "command": "kaleidoscope.showAllChangesFromScmTitle",
-        "title": "Show All Changes (Kaleidoscope)",
         "icon": {
           "light": "img/kaleidoscope.svg",
           "dark": "img/kaleidoscope~dark.svg"
@@ -186,13 +177,6 @@
           "command": "kaleidoscope.diffFile",
           "group": "3_compare",
           "when": "config.kaleidoscope.compareTool"
-        }
-      ],
-      "scm/title": [
-        {
-          "command": "kaleidoscope.showAllChangesFromScmTitle",
-          "group": "navigation",
-          "when": "scmProvider == git"
         }
       ],
       "scm/resourceFolder/context": [

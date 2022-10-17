@@ -43,13 +43,6 @@ interface Resource extends vscode.SourceControlResourceState {
 	readonly type: Status;
 }
 
-// One more private interface as I don't find a public one
-
-interface SCMTitleNavigationEvent {
-	readonly rootUri: vscode.Uri
-}
-
-
 function isWindowsPath(path: string): boolean {
 	return /^[a-zA-Z]:\\/.test(path);
 }
@@ -256,18 +249,6 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		})
 	);
-
-	context.subscriptions.push(
-		vscode.commands.registerCommand('kaleidoscope.showAllChangesFromScmTitle', (event: SCMTitleNavigationEvent) => {
-			if (event.rootUri) {
-				let repositories = gitAPI.repositories.filter(r => isDescendant(r.rootUri.fsPath, event.rootUri.fsPath));
-				if (repositories.length === 1) {
-					difftool(repositories[0], []);
-				}
-			}
-		})
-	);
-
 	
 }
 

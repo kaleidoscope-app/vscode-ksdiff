@@ -244,7 +244,8 @@
   },
   "dependencies": {
     "child_process": "^1.0.2",
-    "simple-git": "^2.47.0"
+    "simple-git": "^2.47.0",
+    "vscode-uri": "^3.0.6"
   },
   "extensionDependencies": [
     "vscode.git"

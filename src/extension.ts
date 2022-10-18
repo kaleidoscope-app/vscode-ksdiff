@@ -191,6 +191,7 @@ export function activate(context: vscode.ExtensionContext) {
 					difftool(repository, paths);
 				}
 			} else {
+				// Diff Staged and Unstaged: HEAD
 				difftool(repository, ['HEAD', ...paths]);
 			}
 		})
@@ -268,6 +269,16 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		})
 	);
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand('kaleidoscope.showAllChangesFromScmTitle', () => {
+			for (const repository of gitAPI.repositories) {
+				// Diff Staged and Unstaged: HEAD
+				difftool(repository, ['HEAD']);
+			}
+		})
+	);
+
 	
 }
 

@@ -177,7 +177,7 @@
         {
           "command": "kaleidoscope.diffFile",
           "group": "navigation",
-          "when": "editorIsOpen && !textCompareEditorActive"
+          "when": "editorIsOpen && !textCompareEditorActive && resourceScheme == file"
         },
         {
           "command": "kaleidoscope.textCompareEditor",

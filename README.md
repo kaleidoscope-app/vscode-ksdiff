@@ -29,7 +29,7 @@ The extension provides the following functionalities through a comprehensive set
 * Show git difftool results in Kaleidoscope or default diff tool defined
 * Run git mergetool in Kaleidoscope or default merge tool defined
 
-<img src="README/changeset-light.gif" alt="Running git difftool with Kaleidoscope" width="100%"  style="margin: 10px 0;">
+<img src="https://github.com/kaleidoscope-app/vscode-ksdiff/raw/main/README/changeset-light.gif" alt="Running git difftool with Kaleidoscope" width="100%"  style="margin: 10px 0;">
 
 ## How to use
 
@@ -39,14 +39,18 @@ The extension provides the following functionalities through a comprehensive set
 
 ### In SCM View
 
-* In the header area, click the `Show all Changes (Kaleidoscope)` button to see all git changes in the current working copy.
-* Bring up the context menu on a header, such as `Changes` or `Staged Changes`, select `Show all Changes (Kaleidosocope)` to show all git changes in that group.
-* Bring up the context menu on a file, select `Show Changes (Kaleidoscope)` to compare the working copy version of that file with the last repository version.
-* In the Merge Changs group, bring up the context menu on a file, select `Start Merge (Kaleidoscope)` to open that file in 3-way merge in Kaleidoscope.
+* In the header area, click the `Show all Changes in Kaleidoscope` button to see all git changes in the current working copy.
+* Bring up the context menu on a header, such as `Changes` or `Staged Changes`, select `Show all Changes in Kaleidosocope` to show all git changes in that group.
+* Bring up the context menu on a file, select `Show Changes in Kaleidoscope` to compare the working copy version of that file with the last repository version.
+* In the Merge Changes group, bring up the context menu on a file, select `Merge in Kaleidoscope` to open that file in 3-way merge in Kaleidoscope.
 
 ### In the Editor
 
-* In the header area, click the `Open in Kaleidoscope` button to open the file currently being edited in Kaleidoscope. Repeat with a second file to compare those files.
+* In the header area, click the `Open in Kaleidoscope` button to open the file currently being edited in Kaleidoscope. There are 4 scenarios:
+  1. If you are comparing two files, Kaleidoscope will open a comparison of those.
+  2. If you are comparing the working copy of a file with the HEAD revision, Kaleidocope will open that comparison.
+  3. If a file being edited is in a git conflict state, Kaleidoscope will open a 3-way merge.
+  4. When editing a single file, repeat with a second file to compare those files.
 * With a text selection, bring up the context menu and select `Compare in Kaleidoscope`. Repeat to compare those selections.
 
 ## Requirements
@@ -67,6 +71,10 @@ The two latter settings require git to be configured correctly. This can be easi
 
 
 ## Release Notes
+
+### 1.1.0 - February 27, 2024
+
+* Major overhaul. Please report issues to hello@kaleidoscope.app, or fix and create a pull request.
 
 ### 1.0.2 - October 18, 2022
 

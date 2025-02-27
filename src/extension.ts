@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { Utils } from 'vscode-uri';
-import { API as GitAPI, GitExtension, Repository } from '../typings/git';
+import { API as GitAPI, GitExtension, Repository, RepositoryState, Status, Change } from '../typings/git';
 import { spawn, SpawnOptions } from 'child_process';
 import simpleGit, { GitError } from 'simple-git';
 import { sep } from 'path';
@@ -10,26 +10,6 @@ import { sep } from 'path';
 
 /*eslint-disable */
 
-enum Status { 
-	INDEX_MODIFIED, 
-	INDEX_ADDED,
-	INDEX_DELETED,
-	INDEX_RENAMED,
-	INDEX_COPIED,
-
-	MODIFIED,
-	DELETED,
-	UNTRACKED,
-	IGNORED,
-
-	ADDED_BY_US,
-	ADDED_BY_THEM,
-	DELETED_BY_US,
-	DELETED_BY_THEM,
-	BOTH_ADDED,
-	BOTH_DELETED,
-	BOTH_MODIFIED,
-}
 export const enum ResourceGroupType {
 	Merge,
 	Index,
@@ -71,7 +51,7 @@ function git(repository: Repository, gitCommandAndArgs: string[]): void {
 		gitCommandAndArgs,
 		(err: any, result: any) => {
 			if (err && err.message) {
-				vscode.window.showWarningMessage(err.message);
+				vscode.window.showWarningMessage('Git Reply: ' + err.message);
 			}
 		}
 	);
@@ -97,17 +77,37 @@ function mergetool(repository: Repository, additionalArgs: string[]): void {
 	}
 }
 
-async function fileExists(path:string): Promise<boolean> {
+async function getDiffTool(): Promise<string | undefined> {
+	// Try to get the diff tool from the Settings and return it if it exists
 	try {
-		await vscode.workspace.fs.stat(vscode.Uri.parse(path));
-		return true;
-	} catch {
-		let selection = await vscode.window.showWarningMessage(`${path} file does *not* exist`, 'More');
-		if (selection && selection === 'More' ) {
-			vscode.env.openExternal(vscode.Uri.parse('https://kaleidoscope.app'));
+		let config = vscode.workspace.getConfiguration('kaleidoscope');
+		var diffPath = config.get('compareTool') as string;
+			let uri = vscode.Uri.parse(diffPath);
+		let stat = await vscode.workspace.fs.stat(uri);
+		if (stat.type === (vscode.FileType.File | vscode.FileType.SymbolicLink)) {
+			return diffPath;
 		}
-		return false;
+	} catch { }
+	// If that did not work, try to find ksdiff in its default location
+	try {
+		diffPath = "/Applications/Kaleidoscope.app/Contents/MacOS/ksdiff";
+		let uri = vscode.Uri.parse(diffPath);
+		let stat = await vscode.workspace.fs.stat(uri);
+		if (stat.type === vscode.FileType.File) {
+			return diffPath;
+		}	
+	} catch { }
+	// Report to the user that the tool could not be found
+	const selection = await vscode.window.showErrorMessage('Kaleidoscope Compare Tool is not installed or not correctly configured.', 'Open Settings', 'Get Kaleidoscope');
+	if (selection === 'Open Settings') {
+		await vscode.commands.executeCommand(
+			'workbench.action.openSettings',
+			'kaleidoscope.compareTool'
+		);
+	} else if (selection === 'Get Kaleidoscope') {
+		vscode.env.openExternal(vscode.Uri.parse('https://kaleidoscope.app'));
 	}
+	return undefined;
 }
 
 export function activate(context: vscode.ExtensionContext) {
@@ -120,25 +120,60 @@ export function activate(context: vscode.ExtensionContext) {
 	let gitAPI = gitExtension.getAPI(1);
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand('kaleidoscope.diffFile', async (uri?: vscode.Uri, uris?: [vscode.Uri]) => {
-			let config = vscode.workspace.getConfiguration('kaleidoscope');
-			let diffPath = config.get('compareTool') as string;
-			if (!await fileExists(diffPath)) {
-				return;
-			}
-
+		vscode.commands.registerCommand('kaleidoscope.diff', async (uri?: vscode.Uri, uris?: [vscode.Uri]) => {
+			// This is the new catch-all function trying to handle all cases
+			let workspaceName = vscode.workspace.name ?? "VSCode";
 			var paths: string[] = [];
-			if (uris && uris?.length > 0) {
-				paths = uris.map(r => r.fsPath);
-			} else if (uri?.fsPath) {
-				paths = [uri.fsPath];
-			} else if (vscode.window.activeTextEditor) {
-				let docUri = vscode.window.activeTextEditor.document.uri;
-				if (docUri?.fsPath) {
-					paths = [docUri.fsPath];
+
+			const visibleEditors = vscode.window.visibleTextEditors;
+			if (visibleEditors.length === 2) {
+				// First, check if we have two visible editors, which would be a comparison of sorts
+      			const leftEditor = visibleEditors[0];
+      			const rightEditor = visibleEditors[1];
+		      	const leftUri = leftEditor.document.uri;
+      			const rightUri = rightEditor.document.uri;
+				let leftPath: string = leftUri.fsPath;
+				let rightPath: string = rightUri.fsPath;
+				if (leftPath === rightPath) {
+					// If the paths are the same, we are comparing the same file
+					// Check if there is a git conflict for that file.
+					// Depending on that, we will call git mergetool or git difftool
+					const repository = gitAPI.repositories.filter(r => isDescendant(r.rootUri.fsPath, leftPath))[0];
+					const isConflicted = repository.state.mergeChanges.some(f => f.uri.fsPath === leftPath && f.status === Status.BOTH_MODIFIED);
+					if (isConflicted) {
+						mergetool(repository, [leftPath]);
+					} else {
+						difftool(repository, [leftPath]);
+					}
+					return;
+				} else {
+					// If the paths are different, we are comparing two different files.
+					paths = [leftPath, rightPath];
+				}
+			} else {
+				if (uris && uris?.length > 0) {
+					// If we received multiple Uris, use those
+					paths = uris.map(r => r.fsPath);
+				} else if (uri) {
+					// Othweise we may have received a single Uri
+					paths = [uri.path];
+				} else if (vscode.window.activeTextEditor) {
+					// If none of the above worked, also try to use the Uri of the active text editor as fallback
+					let docUri = vscode.window.activeTextEditor.document.uri;
+					if (docUri?.fsPath) {
+						paths = [docUri.fsPath];
+					}
+				}
+				if (paths.length === 1) {
+					// If we have a single file, do a conflict check before just opening it
+					const path = paths[0];
+					const repository = gitAPI.repositories.filter(r => isDescendant(r.rootUri.fsPath, path))[0];
+					const isConflicted = repository.state.mergeChanges.some(f => f.uri.fsPath === path && f.status === Status.BOTH_MODIFIED);
+					if (isConflicted) {
+						return mergetool(repository, [path]);
+					}
 				}
 			}
-
 			if (paths.length === 0) {
 				return;
 			}
@@ -147,17 +182,24 @@ export function activate(context: vscode.ExtensionContext) {
 			spawnOptions = {
 				detached: true
 			};
-			let workspaceName = vscode.workspace.name ?? "VSCode";
+			let diffPath = await getDiffTool();
+			if (!diffPath) {
+				return;
+			}
 			const diff = spawn(diffPath, ['-l', workspaceName, ...paths], spawnOptions);
 			diff.stdin?.end();
 		})
 	);
 
 	context.subscriptions.push(
-		vscode.commands.registerTextEditorCommand('kaleidoscope.diffSection', async (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) => {
-			let config = vscode.workspace.getConfiguration('kaleidoscope');
-			let diffPath = config.get('compareTool') as string;
-			if (!await fileExists(diffPath)) {
+		vscode.commands.registerTextEditorCommand('kaleidoscope.diffSelectedText', async (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) => {
+			// This function is meant to be called on a text selection in the editor
+			// Still, do a check for a  git conflict before just comparig text.
+			const fileUri = textEditor.document.uri;
+			const repository = gitAPI.repositories.filter(r => isDescendant(r.rootUri.fsPath, fileUri.fsPath))[0];
+			const isConflicted = repository.state.workingTreeChanges.some(f => f.uri.fsPath === fileUri.fsPath && f.status === Status.BOTH_MODIFIED);
+			if (isConflicted) {
+				mergetool(repository, [fileUri.fsPath]);
 				return;
 			}
 
@@ -169,6 +211,10 @@ export function activate(context: vscode.ExtensionContext) {
 				detached: true
 			};
 			let workspaceName = vscode.workspace.name ?? "VSCode";
+			let diffPath = await getDiffTool();
+			if (!diffPath) {
+				return;
+			}
 			const diff = spawn(diffPath, ['-l', workspaceName, '-'], spawnOptions);
 			diff.stdin?.write(text);
 			diff.stdin?.end();
@@ -178,6 +224,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('kaleidoscope.diffScm', (...resourceStates: [vscode.SourceControlResourceState]) => {
 			if (!resourceStates.length) {
+				vscode.window.showInformationMessage('The repository does not have any changes.');
 				return;
 			}
 
@@ -200,6 +247,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('kaleidoscope.mergeScm', (...resourceStates: [vscode.SourceControlResourceState]) => {
 			if (!resourceStates.length) {
+				vscode.window.showInformationMessage('The repository does not have any changes.');
 				return;
 			}
 
@@ -213,6 +261,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('kaleidoscope.showAllStagedChanges', (group: vscode.SourceControlResourceGroup) => {
 			if (!group.resourceStates.length) {
+				vscode.window.showInformationMessage('The repository does not have any changes.');
 				return;
 			}
 			let resourceState = group.resourceStates[0];
@@ -227,6 +276,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('kaleidoscope.showAllUnstagedChanges', (group: vscode.SourceControlResourceGroup) => {
 			if (!group.resourceStates.length) {
+				vscode.window.showInformationMessage('The repository does not have any changes.');
 				return;
 			}
 			let resourceState = group.resourceStates[0];
@@ -253,20 +303,6 @@ export function activate(context: vscode.ExtensionContext) {
 			let repository = gitAPI.repositories.filter(r => isDescendant(r.rootUri.fsPath, path))[0];
 	
 			difftool(repository, [path]);
-		})
-	);
-
-	context.subscriptions.push(
-		vscode.commands.registerCommand('kaleidoscope.textCompareEditor', (uri: vscode.Uri) => {
-
-			let path: string = uri.fsPath;
-			let repository = gitAPI.repositories.filter(r => isDescendant(r.rootUri.fsPath, path))[0];
-			
-			if (uri.scheme === 'merge-conflict.conflict-diff') {
-				mergetool(repository, [path]);
-			} else {
-				difftool(repository, [path]);
-			}
 		})
 	);
 

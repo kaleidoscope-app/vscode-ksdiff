@@ -168,9 +168,11 @@ export function activate(context: vscode.ExtensionContext) {
 					// If we have a single file, do a conflict check before just opening it
 					const path = paths[0];
 					const repository = gitAPI.repositories.filter(r => isDescendant(r.rootUri.fsPath, path))[0];
-					const isConflicted = repository.state.mergeChanges.some(f => f.uri.fsPath === path && f.status === Status.BOTH_MODIFIED);
-					if (isConflicted) {
-						return mergetool(repository, [path]);
+					if (repository) {
+						const isConflicted = repository.state.mergeChanges.some(f => f.uri.fsPath === path && f.status === Status.BOTH_MODIFIED);
+						if (isConflicted) {
+							return mergetool(repository, [path]);
+						}
 					}
 				}
 			}
@@ -197,12 +199,13 @@ export function activate(context: vscode.ExtensionContext) {
 			// Still, do a check for a  git conflict before just comparig text.
 			const fileUri = textEditor.document.uri;
 			const repository = gitAPI.repositories.filter(r => isDescendant(r.rootUri.fsPath, fileUri.fsPath))[0];
-			const isConflicted = repository.state.workingTreeChanges.some(f => f.uri.fsPath === fileUri.fsPath && f.status === Status.BOTH_MODIFIED);
-			if (isConflicted) {
-				mergetool(repository, [fileUri.fsPath]);
-				return;
+			if (repository) {
+				const isConflicted = repository.state.workingTreeChanges.some(f => f.uri.fsPath === fileUri.fsPath && f.status === Status.BOTH_MODIFIED);
+				if (isConflicted) {
+					mergetool(repository, [fileUri.fsPath]);
+					return;
+				}
 			}
-
 			const selection = textEditor.selection;
 			const text = textEditor.document.getText(selection);
 

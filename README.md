@@ -72,9 +72,13 @@ The two latter settings require git to be configured correctly. This can be easi
 
 ## Release Notes
 
+### 1.1.1 - February 28, 2024
+
+* Bugfixes. Please report issues to hello@kaleidoscope.app, or fix and create a pull request.
+
 ### 1.1.0 - February 27, 2024
 
-* Major overhaul. Please report issues to hello@kaleidoscope.app, or fix and create a pull request.
+* Major overhaul.
 
 ### 1.0.2 - October 18, 2022
 

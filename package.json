@@ -2,7 +2,7 @@
   "name": "vscode-ksdiff",
   "displayName": "Kaleidoscope for Visual Studio Code",
   "description": "Compare files and text selections, run git difftool and git mergetool.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "publisher": "kaleidoscope-app",
   "homepage": "https://kaleidoscope.app",
   "bugs": {
@@ -156,7 +156,7 @@
         {
           "command": "kaleidoscope.diff",
           "group": "navigation",
-          "when": "editorIsOpen && activeCustomEditorId != 'vscode.audioPreview' && activeCustomEditorId != 'vscode.videoPreview' && activeCustomEditorId != 'vscode.markdown.preview' && resourceScheme != 'vscode-settings' && isMac"
+          "when": "editorIsOpen && activeCustomEditorId != 'vscode.audioPreview' && activeCustomEditorId != 'vscode.videoPreview' && activeCustomEditorId != 'vscode.markdown.preview' && resourceScheme != 'vscode-settings' && resourceScheme == 'file' && isMac"
         }
       ],
       "editor/title/context": [
